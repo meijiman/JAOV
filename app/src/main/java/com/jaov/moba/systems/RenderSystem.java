@@ -7,6 +7,7 @@ import com.badlogic.ashley.systems.IteratingSystem;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.jaov.moba.components.MovementComponent;
 import com.jaov.moba.components.PositionComponent;
 import com.jaov.moba.components.TextureComponent;
 import com.jaov.moba.components.AnimationComponent;
@@ -36,8 +37,9 @@ public class RenderSystem extends IteratingSystem {
         TextureComponent tex = tm.get(entity);
 
         if (anim != null) {
-            // Vẽ frame hiện tại của animation
-            Texture frame = anim.getCurrentFrame();
+            MovementComponent move = ComponentMapper.getFor(MovementComponent.class).get(entity);
+            boolean isMoving = move != null && move.moving;
+            Texture frame = anim.getCurrentFrame(isMoving);
             batch.draw(frame,
                 pos.position.x - anim.width / 2,
                 pos.position.y - anim.height / 2,

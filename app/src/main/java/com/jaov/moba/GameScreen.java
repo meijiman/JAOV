@@ -54,7 +54,13 @@ public class GameScreen extends ScreenAdapter {
             new Texture(Gdx.files.internal("hero_idle_2.png")),
             new Texture(Gdx.files.internal("hero_idle_3.png"))
         };
-        heroEntity.add(new AnimationComponent(idleFrames, 0.15f, 192, 192));
+        Texture[] runFrames = {
+            new Texture(Gdx.files.internal("hero_run_0.png")),
+            new Texture(Gdx.files.internal("hero_run_1.png")),
+            new Texture(Gdx.files.internal("hero_run_2.png")),
+            new Texture(Gdx.files.internal("hero_run_3.png"))
+        };
+        heroEntity.add(new AnimationComponent(idleFrames, runFrames, 0.15f, 192, 192));
 
         engine.addEntity(heroEntity);
 
