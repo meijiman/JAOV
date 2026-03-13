@@ -7,11 +7,13 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.jaov.moba.components.MovementComponent;
 import com.jaov.moba.components.PositionComponent;
+import com.jaov.moba.components.TextureComponent;
 import com.jaov.moba.systems.MovementSystem;
 import com.jaov.moba.systems.RenderSystem;
 
@@ -22,6 +24,7 @@ public class GameScreen extends ScreenAdapter {
 
     private Engine engine;
     private Entity heroEntity;
+
     private Vector2 targetPos = new Vector2(640, 360);
 
     private static final float MAP_WIDTH  = 3000f;
@@ -36,13 +39,23 @@ public class GameScreen extends ScreenAdapter {
         // Khởi tạo Ashley Engine
         engine = new Engine();
         engine.addSystem(new MovementSystem());
-        engine.addSystem(new RenderSystem(shapeRenderer));
+        engine.addSystem(new RenderSystem(game.batch, shapeRenderer));
 
         // Tạo hero entity
         heroEntity = new Entity();
         heroEntity.add(new PositionComponent(640, 360));
         heroEntity.add(new MovementComponent(200f));
+        heroEntity.add(new TextureComponent(
+            new Texture(Gdx.files.internal("hero.png")),
+            192, 192
+        ));
         engine.addEntity(heroEntity);
+
+        // Tạo minion entity
+        Entity minionEntity = new Entity();
+        minionEntity.add(new PositionComponent(400, 300));
+        minionEntity.add(new MovementComponent(100f));
+        engine.addEntity(minionEntity);
     }
 
     @Override
@@ -56,6 +69,7 @@ public class GameScreen extends ScreenAdapter {
         PositionComponent pos = heroEntity.getComponent(PositionComponent.class);
         camera.position.set(pos.position.x, pos.position.y, 0);
         camera.update();
+        game.batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
 
         drawMap();
@@ -66,10 +80,11 @@ public class GameScreen extends ScreenAdapter {
         shapeRenderer.circle(targetPos.x, targetPos.y, 8);
         shapeRenderer.end();
 
-        // Ashley cập nhật tất cả systems (MovementSystem + RenderSystem)
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        // MovementSystem chạy trước (không cần begin/end)
+        // RenderSystem tự quản lý batch/shapeRenderer bên trong
+        game.batch.begin();
         engine.update(delta);
-        shapeRenderer.end();
+        game.batch.end();
     }
 
     private void handleInput() {
