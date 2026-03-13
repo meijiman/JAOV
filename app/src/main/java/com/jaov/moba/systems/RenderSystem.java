@@ -40,10 +40,14 @@ public class RenderSystem extends IteratingSystem {
             MovementComponent move = ComponentMapper.getFor(MovementComponent.class).get(entity);
             boolean isMoving = move != null && move.moving;
             Texture frame = anim.getCurrentFrame(isMoving);
-            batch.draw(frame,
-                pos.position.x - anim.width / 2,
-                pos.position.y - anim.height / 2,
-                anim.width, anim.height);
+            boolean facingRight = move != null && move.facingRight;
+            float x = pos.position.x - anim.width / 2;
+            float y = pos.position.y - anim.height / 2;
+            if (facingRight) {
+                batch.draw(frame, x, y, anim.width, anim.height);
+            } else {
+                batch.draw(frame, x + anim.width, y, -anim.width, anim.height);
+            }
         } else if (tex != null) {
             // Vẽ ảnh tĩnh
             batch.draw(tex.texture,

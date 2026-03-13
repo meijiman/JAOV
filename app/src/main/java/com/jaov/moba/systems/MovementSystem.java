@@ -30,7 +30,9 @@ public class MovementSystem extends IteratingSystem {
         Vector2 direction = new Vector2(move.target).sub(pos.position);
 
         if (direction.len() > 5f) {
-            direction.nor().scl(move.speed * deltaTime);
+            direction.nor();
+            move.facingRight = direction.x > 0;
+            direction.scl(move.speed * deltaTime);
             pos.position.add(direction);
         } else {
             move.moving = false;
