@@ -16,6 +16,8 @@ import com.jaov.moba.components.PositionComponent;
 import com.jaov.moba.components.TextureComponent;
 import com.jaov.moba.systems.MovementSystem;
 import com.jaov.moba.systems.RenderSystem;
+import com.jaov.moba.components.AnimationComponent;
+import com.jaov.moba.systems.AnimationSystem;
 
 public class GameScreen extends ScreenAdapter {
     private MobaGame game;
@@ -39,16 +41,21 @@ public class GameScreen extends ScreenAdapter {
         // Khởi tạo Ashley Engine
         engine = new Engine();
         engine.addSystem(new MovementSystem());
+        engine.addSystem(new AnimationSystem());
         engine.addSystem(new RenderSystem(game.batch, shapeRenderer));
 
         // Tạo hero entity
         heroEntity = new Entity();
         heroEntity.add(new PositionComponent(640, 360));
         heroEntity.add(new MovementComponent(200f));
-        heroEntity.add(new TextureComponent(
-            new Texture(Gdx.files.internal("hero.png")),
-            192, 192
-        ));
+        Texture[] idleFrames = {
+            new Texture(Gdx.files.internal("hero_idle_0.png")),
+            new Texture(Gdx.files.internal("hero_idle_1.png")),
+            new Texture(Gdx.files.internal("hero_idle_2.png")),
+            new Texture(Gdx.files.internal("hero_idle_3.png"))
+        };
+        heroEntity.add(new AnimationComponent(idleFrames, 0.15f, 192, 192));
+
         engine.addEntity(heroEntity);
 
         // Tạo minion entity

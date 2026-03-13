@@ -4,10 +4,12 @@ import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.jaov.moba.components.PositionComponent;
 import com.jaov.moba.components.TextureComponent;
+import com.jaov.moba.components.AnimationComponent;
 
 public class RenderSystem extends IteratingSystem {
 
@@ -18,6 +20,8 @@ public class RenderSystem extends IteratingSystem {
         ComponentMapper.getFor(PositionComponent.class);
     private ComponentMapper<TextureComponent> tm =
         ComponentMapper.getFor(TextureComponent.class);
+    private ComponentMapper<AnimationComponent> am =
+        ComponentMapper.getFor(AnimationComponent.class);
 
     public RenderSystem(SpriteBatch batch, ShapeRenderer shapeRenderer) {
         super(Family.all(PositionComponent.class).get());
@@ -28,16 +32,24 @@ public class RenderSystem extends IteratingSystem {
     @Override
     protected void processEntity(Entity entity, float deltaTime) {
         PositionComponent pos = pm.get(entity);
-        TextureComponent tex = tm.get(entity); // null nếu không có
+        AnimationComponent anim = am.get(entity);
+        TextureComponent tex = tm.get(entity);
 
-        if (tex != null) {
-            // Vẽ ảnh — căn giữa tại pos
+        if (anim != null) {
+            // Vẽ frame hiện tại của animation
+            Texture frame = anim.getCurrentFrame();
+            batch.draw(frame,
+                pos.position.x - anim.width / 2,
+                pos.position.y - anim.height / 2,
+                anim.width, anim.height);
+        } else if (tex != null) {
+            // Vẽ ảnh tĩnh
             batch.draw(tex.texture,
                 pos.position.x - tex.width / 2,
                 pos.position.y - tex.height / 2,
                 tex.width, tex.height);
         } else {
-            // Tạm dừng batch để dùng shapeRenderer
+            // Fallback: hình tròn
             batch.end();
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
             shapeRenderer.setColor(0f, 0.8f, 0.2f, 1f);
@@ -46,4 +58,5 @@ public class RenderSystem extends IteratingSystem {
             batch.begin();
         }
     }
+
 }
