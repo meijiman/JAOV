@@ -29,6 +29,7 @@ import com.jaov.moba.systems.AnimationSystem;
 public class GameScreen extends ScreenAdapter {
     private MobaGame game;
     private OrthographicCamera camera;
+    private OrthographicCamera screenCamera;
     private ShapeRenderer shapeRenderer;
 
     private Engine engine;
@@ -36,6 +37,8 @@ public class GameScreen extends ScreenAdapter {
 
     private TiledMap tiledMap;
     private OrthogonalTiledMapRenderer mapRenderer;
+
+    private MiniMap miniMap;
 
     // Blue base center ≈ (350, 350) trong world coords (100x100 tiles @ 64px)
     private Vector2 targetPos = new Vector2(350, 350);
@@ -45,6 +48,8 @@ public class GameScreen extends ScreenAdapter {
         shapeRenderer = new ShapeRenderer();
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1280, 720);
+        screenCamera = new OrthographicCamera();
+        screenCamera.setToOrtho(false, 1280, 720);
 
         // Load Tiled Map
         tiledMap = new TmxMapLoader().load("maps/moba_map.tmx");
@@ -100,6 +105,8 @@ public class GameScreen extends ScreenAdapter {
         minionEntity.add(new PositionComponent(400, 300));
         minionEntity.add(new MovementComponent(100f));
         engine.addEntity(minionEntity);
+
+        miniMap = new MiniMap(shapeRenderer, engine, heroEntity, screenCamera);
     }
 
     @Override
@@ -130,6 +137,10 @@ public class GameScreen extends ScreenAdapter {
         game.batch.begin();
         engine.update(delta);
         game.batch.end();
+
+        // MiniMap luôn hiển thị góc trên bên trái (screen-space)
+        miniMap.render();
+        shapeRenderer.setProjectionMatrix(camera.combined);
     }
 
     private void handleInput() {
