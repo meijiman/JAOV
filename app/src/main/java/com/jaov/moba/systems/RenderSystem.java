@@ -82,10 +82,12 @@ public class RenderSystem extends IteratingSystem {
         }
     }
 
+    // Hero sprite = 192px, nhưng phần nhân vật thực tế chỉ chiếm ~2/3 sprite (~128px).
+    // Tower = 192px (1:1 với sprite) → trông như ~1.5x nhân vật thực, vừa mắt.
+    private static final float TOWER_SIZE = 192f;
+
     private void drawTower(float cx, float cy, TowerComponent tower) {
-        // inner=80px, mid=64px (native), outer=48px
-        float size = "inner".equals(tower.rank) ? 80f : "mid".equals(tower.rank) ? 64f : 48f;
         Texture tex = "blue".equals(tower.team) ? towerBlue : towerRed;
-        batch.draw(tex, cx - size / 2, cy - size / 2, size, size);
+        batch.draw(tex, cx - TOWER_SIZE / 2, cy - TOWER_SIZE / 2, TOWER_SIZE, TOWER_SIZE);
     }
 }
