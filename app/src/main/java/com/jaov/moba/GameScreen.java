@@ -9,6 +9,13 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.MapProperties;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.jaov.moba.components.TowerComponent;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.jaov.moba.components.MovementComponent;
@@ -27,16 +34,21 @@ public class GameScreen extends ScreenAdapter {
     private Engine engine;
     private Entity heroEntity;
 
-    private Vector2 targetPos = new Vector2(640, 360);
+    private TiledMap tiledMap;
+    private OrthogonalTiledMapRenderer mapRenderer;
 
-    private static final float MAP_WIDTH  = 3000f;
-    private static final float MAP_HEIGHT = 3000f;
+    // Blue base center ≈ (350, 350) trong world coords (100x100 tiles @ 64px)
+    private Vector2 targetPos = new Vector2(350, 350);
 
     public GameScreen(MobaGame game) {
         this.game = game;
         shapeRenderer = new ShapeRenderer();
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1280, 720);
+
+        // Load Tiled Map
+        tiledMap = new TmxMapLoader().load("maps/moba_map.tmx");
+        mapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
 
         // Khởi tạo Ashley Engine
         engine = new Engine();
@@ -46,7 +58,7 @@ public class GameScreen extends ScreenAdapter {
 
         // Tạo hero entity
         heroEntity = new Entity();
-        heroEntity.add(new PositionComponent(640, 360));
+        heroEntity.add(new PositionComponent(350, 350)); // Blue base
         heroEntity.add(new MovementComponent(200f));
         Texture[] idleFrames = {
             new Texture(Gdx.files.internal("hero_idle_0.png")),
@@ -63,6 +75,25 @@ public class GameScreen extends ScreenAdapter {
         heroEntity.add(new AnimationComponent(idleFrames, runFrames, 0.15f, 192, 192));
 
         engine.addEntity(heroEntity);
+
+        // Spawn tower entities từ TMX object layer
+        MapLayer towerLayer = tiledMap.getLayers().get("Towers");
+        if (towerLayer != null) {
+            for (MapObject obj : towerLayer.getObjects()) {
+                MapProperties props = obj.getProperties();
+                String type = props.get("type", String.class);
+                if (!"tower".equals(type)) continue;
+                float tx = props.get("x", Float.class) + 32f;
+                float ty = props.get("y", Float.class) + 32f;
+                String team = props.get("team", String.class);
+                String lane = props.get("lane", String.class);
+                String rank = props.get("rank", String.class);
+                Entity tower = new Entity();
+                tower.add(new PositionComponent(tx, ty));
+                tower.add(new TowerComponent(team, lane, rank));
+                engine.addEntity(tower);
+            }
+        }
 
         // Tạo minion entity
         Entity minionEntity = new Entity();
@@ -85,7 +116,8 @@ public class GameScreen extends ScreenAdapter {
         game.batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
 
-        drawMap();
+        mapRenderer.setView(camera);
+        mapRenderer.render();
 
         // Vẽ điểm đích
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -113,18 +145,10 @@ public class GameScreen extends ScreenAdapter {
         }
     }
 
-    private void drawMap() {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(0.3f, 0.3f, 0.3f, 1f);
-        for (float x = 0; x <= MAP_WIDTH; x += 100)
-            shapeRenderer.line(x, 0, x, MAP_HEIGHT);
-        for (float y = 0; y <= MAP_HEIGHT; y += 100)
-            shapeRenderer.line(0, y, MAP_WIDTH, y);
-        shapeRenderer.end();
-    }
-
     @Override
     public void dispose() {
+        mapRenderer.dispose();
+        tiledMap.dispose();
         shapeRenderer.dispose();
     }
 }
