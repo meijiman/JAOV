@@ -115,3 +115,7 @@ The map is edited with [Tiled Map Editor](https://www.mapeditor.org/). Open `app
 - Standard Java conventions, no enforced formatter
 - Keep ECS separation: components are pure data, systems contain all logic
 - Asset loading belongs in constructors; rendering logic belongs in `RenderSystem`
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for planned features.
