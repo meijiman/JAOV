@@ -161,5 +161,6 @@ public class GameScreen extends ScreenAdapter {
         mapRenderer.dispose();
         tiledMap.dispose();
         shapeRenderer.dispose();
+        engine.getSystem(RenderSystem.class).dispose();
     }
 }

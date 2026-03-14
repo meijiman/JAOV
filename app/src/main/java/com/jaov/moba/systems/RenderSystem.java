@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -27,10 +28,20 @@ public class RenderSystem extends IteratingSystem {
     private ComponentMapper<TowerComponent> towerMapper =
         ComponentMapper.getFor(TowerComponent.class);
 
+    private Texture towerBlue;
+    private Texture towerRed;
+
     public RenderSystem(SpriteBatch batch, ShapeRenderer shapeRenderer) {
         super(Family.all(PositionComponent.class).get());
         this.batch = batch;
         this.shapeRenderer = shapeRenderer;
+        towerBlue = new Texture(Gdx.files.internal("tower_blue.png"));
+        towerRed  = new Texture(Gdx.files.internal("tower_red.png"));
+    }
+
+    public void dispose() {
+        towerBlue.dispose();
+        towerRed.dispose();
     }
 
     @Override
@@ -72,31 +83,9 @@ public class RenderSystem extends IteratingSystem {
     }
 
     private void drawTower(float cx, float cy, TowerComponent tower) {
-        boolean isBlue = "blue".equals(tower.team);
-        float bodyW = "inner".equals(tower.rank) ? 40f : "mid".equals(tower.rank) ? 34f : 28f;
-        float bodyH = "inner".equals(tower.rank) ? 54f : "mid".equals(tower.rank) ? 46f : 38f;
-        float battleW = bodyW + 10f;
-        float battleH = 10f;
-
-        batch.end();
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
-        // Thân trụ
-        if (isBlue) shapeRenderer.setColor(0.2f, 0.45f, 1.0f, 1f);
-        else        shapeRenderer.setColor(1.0f, 0.25f, 0.2f, 1f);
-        shapeRenderer.rect(cx - bodyW / 2, cy - bodyH / 2, bodyW, bodyH);
-
-        // Đỉnh trụ (battlements)
-        shapeRenderer.rect(cx - battleW / 2, cy + bodyH / 2, battleW, battleH);
-
-        // Viền trắng
-        shapeRenderer.end();
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(1f, 1f, 1f, 0.8f);
-        shapeRenderer.rect(cx - bodyW / 2, cy - bodyH / 2, bodyW, bodyH);
-        shapeRenderer.rect(cx - battleW / 2, cy + bodyH / 2, battleW, battleH);
-
-        shapeRenderer.end();
-        batch.begin();
+        // inner=80px, mid=64px (native), outer=48px
+        float size = "inner".equals(tower.rank) ? 80f : "mid".equals(tower.rank) ? 64f : 48f;
+        Texture tex = "blue".equals(tower.team) ? towerBlue : towerRed;
+        batch.draw(tex, cx - size / 2, cy - size / 2, size, size);
     }
 }
